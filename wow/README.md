@@ -64,6 +64,9 @@ cp "$acct/bindings-cache.wtf" "$acct/bindings-cache.wtf.bak"
 sed 's/$/\r/' wow/Bindings.wtf > "$acct/bindings-cache.wtf"
 ```
 
+The binds assume an MMO mouse whose side buttons send `[` `]` `;` `'` `.`. Those keys drive
+action bar 3: buttons 7 to 11, or 1 to 5 with Shift. `SHIFT-SPACE` is button 6.
+
 Every Blizzard command in the file exists on Forever 1.60.1 (checked against its
 `Bindings_Camelot.xml`). The few `CLICK` lines belong to old addons (ConsolePort, Bartender4,
 WoW-Pro) and do nothing without them. A character with **Character Specific Keybindings**
