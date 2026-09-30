@@ -8,6 +8,7 @@ Works for normal profile exports and full account exports.
 import argparse
 import json
 import os
+import sys
 
 import euilib
 
@@ -37,6 +38,9 @@ def main():
               f"modules={len(mods)} -> {stem}.lua / .json")
         if mods:
             print("   ", ", ".join(mods))
+        if p["type"] != "full":
+            print(f"    WARNING: type {p['type']} is not a profile export. A full account export carries gold, "
+                  "bag contents and click cast bindings: never commit it.", file=sys.stderr)
 
 
 if __name__ == "__main__":

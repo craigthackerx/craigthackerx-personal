@@ -1,11 +1,15 @@
 """Decode ElvUI !E1! export strings (LibDeflate print encoding + raw DEFLATE + AceSerializer) to JSON.
 
-Usage: python3 elvui_decode.py <string-file> [...]
-Writes <name>.json in the current folder and prints the export type (profile, private, global, filters).
-Pure Python, no dependencies.
+Usage: python3 elvui_decode.py <string-file> [...] [--out DIR]
+Writes <name>.json next to each input (or into --out) and prints the export type (profile,
+private, global, filters). Pure Python, no dependencies.
+
+ElvUI has been replaced by EllesmereUI, so the ElvUI strings themselves now live in the
+repository's legacy tag: git show legacy:wow/elvui/0-elvui-pofile-import.txt > elvui.txt
 """
+import argparse
 import json
-import sys
+import os
 import zlib
 
 ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789()"
@@ -136,11 +140,21 @@ def decode(export: str):
     return ace_deserialize(body), meta
 
 
-if __name__ == "__main__":
-    for path in sys.argv[1:]:
-        with open(path) as fh:
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("files", nargs="+")
+    ap.add_argument("--out", help="output folder (default: next to each input)")
+    args = ap.parse_args()
+    for path in args.files:
+        with open(path, encoding="utf-8") as fh:
             data, meta = decode(fh.read())
-        out = path.rsplit("/", 1)[-1] + ".json"
-        with open(out, "w") as fh:
+        out_dir = args.out or os.path.dirname(os.path.abspath(path))
+        os.makedirs(out_dir, exist_ok=True)
+        out = os.path.join(out_dir, os.path.splitext(os.path.basename(path))[0] + ".json")
+        with open(out, "w", encoding="utf-8") as fh:
             json.dump(data[0] if len(data) == 1 else data, fh, indent=1, sort_keys=True)
         print(path, "->", out, "| meta:", meta)
+
+
+if __name__ == "__main__":
+    main()

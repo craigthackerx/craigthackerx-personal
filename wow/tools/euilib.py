@@ -68,14 +68,19 @@ def _require(path, what):
         raise SystemExit(f"{what} not found at {path}. Run fetch_deps.sh or set EUI_DEPS.")
 
 
+def _read(path):
+    with open(path, encoding="utf-8") as fh:
+        return fh.read()
+
+
 def runtime():
     """A Lua 5.1 runtime with LibDeflate, EllesmereUI's Serializer and the helpers loaded."""
     _require(LIBDEFLATE, "LibDeflate")
     _require(PROFILES_LUA, "EllesmereUI_Profiles.lua")
     lua = lua51.LuaRuntime(unpack_returned_tuples=True)
     g = lua.globals()
-    g.LibDeflate = lua.execute(open(LIBDEFLATE, encoding="utf-8").read())
-    src = open(PROFILES_LUA, encoding="utf-8").read()
+    g.LibDeflate = lua.execute(_read(LIBDEFLATE))
+    src = _read(PROFILES_LUA)
     start = src.index("local Serializer = {}")
     end = src.index("EllesmereUI._Serializer = Serializer")
     g.Serializer = lua.execute(src[start:end] + "\nreturn Serializer\n")
@@ -85,7 +90,7 @@ def runtime():
 
 def profiles_source_lines():
     _require(PROFILES_LUA, "EllesmereUI_Profiles.lua")
-    return open(PROFILES_LUA, encoding="utf-8").read().splitlines()
+    return _read(PROFILES_LUA).splitlines()
 
 
 def to_py(v):
@@ -99,7 +104,7 @@ def to_py(v):
 
 
 def read_string(path):
-    return open(path, encoding="utf-8").read().strip()
+    return _read(path).strip()
 
 
 def write_string(path, s):
