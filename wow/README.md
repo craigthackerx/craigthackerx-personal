@@ -48,7 +48,27 @@ an import ever fails again, export a native layout from retail and compare its h
 ### Keybinds
 
 With the game closed, copy `wow/Bindings.wtf` to `WTF\Account\<ACCOUNT>\bindings-cache.wtf`
-inside that game's install folder, where `<ACCOUNT>` is your account's folder name.
+inside that game's install folder, where `<ACCOUNT>` is your account's folder name. It replaces
+every bind, so back up the existing file first.
+
+| Game | Install folder |
+| --- | --- |
+| Retail | `World of Warcraft\_retail_` |
+| Forever (beta, client 1.60.1) | `World of Warcraft\_classic_beta_` |
+
+From WSL, for Forever (the game writes these files with CRLF endings, so match it):
+
+```bash
+acct="/mnt/c/Program Files (x86)/World of Warcraft/_classic_beta_/WTF/Account/<ACCOUNT>"
+cp "$acct/bindings-cache.wtf" "$acct/bindings-cache.wtf.bak"
+sed 's/$/\r/' wow/Bindings.wtf > "$acct/bindings-cache.wtf"
+```
+
+Every Blizzard command in the file exists on Forever 1.60.1 (checked against its
+`Bindings_Camelot.xml`). The few `CLICK` lines belong to old addons (ConsolePort, Bartender4,
+WoW-Pro) and do nothing without them. A character with **Character Specific Keybindings**
+turned on keeps its own `bindings-cache.wtf` in its character folder, which overrides the
+account file.
 
 ### Set in game
 
