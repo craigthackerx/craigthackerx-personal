@@ -1,0 +1,11 @@
+# LF everywhere, whatever the checkout platform. This repo is edited from Windows and run
+# inside WSL and CI, where a CRLF shebang makes the interpreter unresolvable.
+* text=auto eol=lf
+
+# UI strings are opaque single line data: never let git or an editor rewrite them, and do
+# not try to diff them line by line.
+wow/ellesmereui/*.txt -text -diff
+wow/blizz-ui/*.txt -text -diff
+
+*.png binary
+*.jpg binary
