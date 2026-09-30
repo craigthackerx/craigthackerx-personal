@@ -12,6 +12,7 @@ wow/blizz-ui it checks that:
   * Edit Mode layouts parse cleanly and match their header's system count
 It also fails if decoded .lua or .json output is tracked anywhere under wow/.
 """
+import argparse
 import glob
 import os
 import subprocess
@@ -73,6 +74,7 @@ def tracked_decoded_output():
 
 
 def main():
+    argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     eui_files = sorted(glob.glob(os.path.join(WOW, "ellesmereui", "*.txt")))
     layout_files = sorted(glob.glob(os.path.join(WOW, "blizz-ui", "*.txt")))
     lua = euilib.runtime() if eui_files else None
