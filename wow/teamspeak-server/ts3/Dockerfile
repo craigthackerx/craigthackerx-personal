@@ -1,1 +1,0 @@
-FROM craigtho/ts3:latest
