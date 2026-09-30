@@ -1,0 +1,25 @@
+---
+# Keeps the SHA pinned actions and the Python tool dependencies current. Monthly and
+# grouped, so at most one pull request per ecosystem. The cooldown skips releases less
+# than a week old, which gives a compromised release time to be caught and pulled.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: pip
+    directory: /wow/tools
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      python:
+        patterns: ["*"]
