@@ -105,5 +105,10 @@ gitleaks is on PATH.
   or point `PYTHON` at another interpreter that has lupa.
 - **The tools lift code out of `EllesmereUI_Profiles.lua` by text markers.** An EllesmereUI
   update can move them. `wow/tools/README.md` lists the markers and the bump procedure.
+- **Retail refuses Forever's Edit Mode layout versions.** The handover assumed retail would read
+  version 3, the format Forever wrote before version 4, and retail 12.1 refused that layout.
+  The converter now writes version 2, the version retail itself exports, and
+  `check_exports.py` enforces it. Confirm game facts like this against a native export
+  before trusting them.
 - **`eui_decode.py` writes next to its input by default.** Pass `--out` pointing at a
   temporary folder, so decoded output never lands in the tree.

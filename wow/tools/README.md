@@ -48,14 +48,26 @@ next to the input by default. It is gitignored, but `--out` into a temporary fol
 
 ### How the Edit Mode conversion works
 
-A layout string is a header then one ten token entry per system. Forever writes format
-version 4, which adds an `interfaceStyle` field. The converter drops the Forever only systems
-(26 MainActionBarEndCap, 27 GroupFinder, 29 SwingTimer), renumbers 28 LossOfControl to 26,
-and writes a version 3 header. Every other system and settings enum is identical between the
-two games. That was checked against Blizzard's generated docs in
+A layout string is a header then one ten token entry per system. The converter drops the
+Forever only systems (26 MainActionBarEndCap, 27 GroupFinder, 29 SwingTimer), renumbers 28
+LossOfControl to 26, and writes a **version 2** header. Every other system and settings enum
+is identical between the two games. That was checked against Blizzard's generated docs in
 [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source) (`live` 12.1.0 build 69933,
-`forever` 1.60.1 build 70124). Whether retail accepts the version 3 header is not yet
-confirmed.
+`forever` 1.60.1 build 70124).
+
+The version matters because retail refuses a layout version it does not know:
+
+| Version | Written by |
+| --- | --- |
+| 4 | Forever today. Adds an `interfaceStyle` field to the header. |
+| 3 | Forever before version 4. Retail 12.1 refused a converted layout with this header. |
+| 2 | Retail. Craig's own retail export (12.0) uses it, and QUI ships a version 2 base layout for 12.1. |
+| 0 | Retail in Dragonflight: Craig's 2022 layouts in the `legacy` tag. |
+
+Retail registers TotemActionBar (25), but its own exports leave it out. The converter drops it
+while it is in its default position with no settings, so there is nothing to lose, and keeps
+it if it has been moved or configured. `check_exports.py` fails any `*retail*` layout that is
+not version 2.
 
 ## Verifying
 
@@ -67,7 +79,8 @@ just verify          # or: wow/tools/verify.sh
 
 - every string file is one line of printable ASCII with no trailing newline
 - EllesmereUI strings decode to a profile export (`type=full`), never a full account export
-- Edit Mode layouts parse and match their header's system count
+- Edit Mode layouts parse and match their header's system count, and retail layouts are
+  version 2
 - no decoded `.lua` or `.json` output is tracked under `wow/`
 
 Then `verify.sh` runs the handover checks, from `wow/tools/`:

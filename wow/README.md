@@ -12,7 +12,7 @@ layout and look.
 | [`ellesmereui/wow-forever.txt`](./ellesmereui/wow-forever.txt) | Forever | EllesmereUI profile, exported in game. **Source of truth.** 15 modules, UI scale 0.64. |
 | [`ellesmereui/retail.txt`](./ellesmereui/retail.txt) | Retail | **Generated** from `wow-forever.txt`. 18 modules: adds Mythic+ Tools, Friends list and Dragon Riding, and drops the Forever only parts. |
 | [`blizz-ui/Craigtho-forever.txt`](./blizz-ui/Craigtho-forever.txt) | Forever | Edit Mode layout, format version 4, 59 systems. **Source of truth.** |
-| [`blizz-ui/Craigtho-retail.txt`](./blizz-ui/Craigtho-retail.txt) | Retail | **Generated** from `Craigtho-forever.txt`. Format version 3, 53 systems. |
+| [`blizz-ui/Craigtho-retail.txt`](./blizz-ui/Craigtho-retail.txt) | Retail | **Generated** from `Craigtho-forever.txt`. Format version 2 (the one retail imports), 52 systems. |
 | [`Bindings.wtf`](./Bindings.wtf) | Both | Keybinds, including the stance bar. Matches this layout on both games. |
 | [`tools/`](./tools) | | Python tools that decode, generate and verify the strings. |
 
@@ -40,9 +40,10 @@ line: copy the whole file. On GitHub, the **Copy raw file** button does this in 
 2. Choose **Import** from the layout menu.
 3. Paste `Craigtho-forever.txt` on Forever, or `Craigtho-retail.txt` on retail.
 
-Whether retail accepts the converted layout's version 3 header is not yet confirmed. If
-retail rejects it, set the layout up in game on retail and export a native retail layout
-instead.
+The retail layout uses format version 2, the version retail itself exports. An earlier
+conversion wrote version 3, which is a Forever format, and retail refused to import it. If
+an import ever fails again, export a native layout from retail and compare its header with
+`Craigtho-retail.txt`.
 
 ### Keybinds
 
