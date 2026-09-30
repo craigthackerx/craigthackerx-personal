@@ -3,10 +3,13 @@
 Usage: python3 editmode_convert.py ../blizz-ui/Craigtho-forever.txt ../blizz-ui/Craigtho-retail.txt
        python3 editmode_convert.py --check <layout-file> [...]
 
-Format (from the strings themselves; version 4 is Forever's, version 3 has no
-interfaceStyle field):
-  v4: <version> <interfaceStyle> <count> <entry>...
-  v3: <version> <count> <entry>...
+Format (from the strings themselves). Retail writes version 2. Forever wrote version 3,
+then added an interfaceStyle field in version 4. Retail rejects a version it does not
+know, so the output must say 2: a version 3 header failed to import on retail 12.1.
+Evidence for version 2: Craig's own retail export (12.0) and QUI's base layout for
+12.1 (zol-wow/QUI importstrings/qui_editmode_base.lua) both use it.
+  v4:    <version> <interfaceStyle> <count> <entry>...
+  v0-v3: <version> <count> <entry>...
   entry: <system> <systemIndex> <isInDefaultPosition> <point> <relativePoint>
          <relativeTo> <offsetX> <offsetY> <anchorInfo2 marker (-1 = none)> <settings>
   settings: "#" (none) or (setting, value) character pairs, each char - 35.
@@ -20,13 +23,16 @@ live 12.1.0 build 69933 and forever 1.60.1 build 70124). Re-check both branches'
 Blizzard_APIDocumentationGenerated/EditModeManagerConstants*Documentation.lua after
 major patches.
 
-Assumption: retail reads the version 3 format (the one Forever itself wrote before it
-added interfaceStyle). If retail rejects the output, export a native retail layout.
+Retail registers TotemActionBar (25) as an optional bar, but its own exports seen so far
+leave it out. It is dropped when it carries nothing (default position, no settings), so
+the output matches what retail writes, and kept if it has been moved or configured.
 """
 import argparse
 
 FOREVER_ONLY = {26: "MainActionBarEndCap", 27: "GroupFinder", 29: "SwingTimer"}
 RENUMBER = {28: 26}                     # LossOfControl
+OMIT_IF_DEFAULT = {25: "TotemActionBar"}
+RETAIL_VERSION = 2
 CHAT_FRAME = 8
 ENTRY_TOKENS = 10
 
@@ -82,18 +88,24 @@ def parse(text):
     return version, interface_style, entries
 
 
+def is_empty_default(e):
+    return e["default"] == 1 and not e["settings"]
+
+
 def to_retail(entries):
     out = []
     for e in entries:
         if e["system"] in FOREVER_ONLY:
+            continue
+        if e["system"] in OMIT_IF_DEFAULT and is_empty_default(e):
             continue
         e = dict(e, system=RENUMBER.get(e["system"], e["system"]))
         out.append(e)
     return out
 
 
-def serialise_v3(entries):
-    parts = ["3", str(len(entries))]
+def serialise_retail(entries):
+    parts = [str(RETAIL_VERSION), str(len(entries))]
     for e in entries:
         parts += [str(e["system"]), str(e["index"]), str(e["default"]), str(e["point"]), str(e["relpoint"]),
                   e["rel"], e["x"], e["y"], "-1", e["blob"]]
@@ -109,9 +121,12 @@ def convert(src, dst):
     v, style, entries = parse(read_layout(src))
     print(f"source: version {v}, interfaceStyle {style}, {len(entries)} systems parsed cleanly")
     dropped = [f"{e['system']}:{FOREVER_ONLY[e['system']]}" for e in entries if e["system"] in FOREVER_ONLY]
+    omitted = [f"{e['system']}:{OMIT_IF_DEFAULT[e['system']]}" for e in entries
+               if e["system"] in OMIT_IF_DEFAULT and is_empty_default(e)]
     retail = to_retail(entries)
     rels = sorted({e["rel"] for e in retail})
     print("dropped (Forever only):", ", ".join(dropped))
+    print("omitted (default, nothing to carry):", ", ".join(omitted) or "none")
     print("relativeTo frames kept:", ", ".join(rels))
     chat = next((e for e in retail if e["system"] == CHAT_FRAME), None)
     if chat is None:
@@ -119,8 +134,9 @@ def convert(src, dst):
     else:
         cs = dict(chat["settings"])
         print(f"chat frame check: {cs[0]*100 + cs[1]} x {cs[2]*100 + cs[3]}")
-    s = serialise_v3(retail)
-    _, _, back = parse(s)
+    s = serialise_retail(retail)
+    v2, _, back = parse(s)
+    _check(v2 == RETAIL_VERSION, f"wrote version {v2}, retail needs {RETAIL_VERSION}")
 
     def ids(es):
         return [(e["system"], e["index"], e["blob"]) for e in es]
@@ -128,7 +144,7 @@ def convert(src, dst):
     _check(ids(back) == ids(retail), "retail string did not re-parse to the same systems")
     with open(dst, "w", encoding="utf-8", newline="") as fh:
         fh.write(s)
-    print(f"retail: version 3, {len(back)} systems, {len(s)} chars, re-parsed OK -> {dst}")
+    print(f"retail: version {RETAIL_VERSION}, {len(back)} systems, {len(s)} chars, re-parsed OK -> {dst}")
 
 
 def main():

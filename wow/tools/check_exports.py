@@ -9,7 +9,8 @@ wow/blizz-ui it checks that:
   * EllesmereUI strings decode, through the addon's own code, to a profile export
     (type full). A full account export fails the check: it carries character gold, bag
     contents and click cast bindings, and this repository is public
-  * Edit Mode layouts parse cleanly and match their header's system count
+  * Edit Mode layouts parse cleanly and match their header's system count, and
+    retail layouts use the version retail imports
 It also fails if decoded .lua or .json output is tracked anywhere under wow/.
 """
 import argparse
@@ -57,9 +58,12 @@ def eui_problem(lua, path):
 
 def layout_problem(path):
     try:
-        editmode_convert.parse(editmode_convert.read_layout(path))
+        version, _, _ = editmode_convert.parse(editmode_convert.read_layout(path))
     except editmode_convert.LayoutError as err:
         return str(err)
+    # Retail rejects layout versions it does not know (version 3 failed on retail 12.1).
+    if "retail" in os.path.basename(path).lower() and version != editmode_convert.RETAIL_VERSION:
+        return f"retail layout is version {version}, retail imports version {editmode_convert.RETAIL_VERSION}"
     return None
 
 
